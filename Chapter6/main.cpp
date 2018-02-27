@@ -156,7 +156,52 @@ int heap_extract_max(int *heap_array,int &size){
     return(max);
 }
 
+// 增加指定元素键值
+int heap_increase_key(
+    int *heap_array,int size,int i,int key){
+    //参数检测
+    if(0==heap_array||0==size){
+        return(-1);
+    }
+    if(i<0||i>=size){
+        return(-2);
+    }
+    if(key<heap_array[i]){
+        return(-3);
+    }
+    //存储新的键值
+    heap_array[i]=key;
+    //上滤
+    while(i>1&&heap_array[parent(i)]<heap_array[i]){
+        const int val=heap_array[i];
+        heap_array[i]=heap_array[parent(i)];
+        heap_array[parent(i)]=val;
+        i=parent(i);
+    }
+    //返回
+    return(0);
+}
 
+#define MaxN  0x3f3f3f3f
+#define MinN  0xc0c0c0c0
+
+// 最大堆插入
+int max_heap_insert(int *heap_array,int &size,const int capacity,const int key){
+    //检验
+    if(0==heap_array||0==capacity||size>=capacity){
+        return(-1);
+    }
+    //空间增加
+    ++size;
+    //插入无穷小
+    heap_array[size-1]=MinN;
+    //提升键值
+    if(heap_increase_key(heap_array,size,size-1,key)<0){
+        return(-2);
+    }
+    //返回
+    return(0);
+}
 
 /**
  * 测试
