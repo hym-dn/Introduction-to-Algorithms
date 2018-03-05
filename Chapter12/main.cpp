@@ -138,3 +138,34 @@ void post_order_tree_walk_2(struct TreeNode *x){
         }
     }    
 }
+
+// 后序遍历（非递归）
+// 后序遍历的非递归实现是三种遍历方式中最难的一种。因为在后序遍历中，
+// 要保证左孩子和右孩子都已被访问并且左孩子在右孩子前访问才能访问根结点，
+// 这就为流程的控制带来了难题。下面介绍两种思路。
+// 第二种思路：要保证根结点在左孩子和右孩子访问之后才能访问，因此对于任
+// 一结点P，先将其入栈。如果P不存在左孩子和右孩子，则可以直接访问它；或
+// 者P存 在左孩子或者右孩子，但是其左孩子和右孩子都已被访问过了，则同样
+// 可以直接访问该结点。若非上述两种情况，则将P的右孩子和左孩子依次入栈，
+// 这样就保证了 每次取栈顶元素的时候，左孩子在右孩子前面被访问，左孩子和
+// 右孩子都在根结点前面被访问。
+void post_order_tree_walk_3(struct TreeNode *x){
+    stack<TreeNode*> s;
+    TreeNode *cur;                      //当前结点 
+    TreeNode *pre=NULL;                 //前一次访问的结点 
+    s.push(x);
+    while(!s.empty()){ // 栈非空
+        cur=s.top(); // 栈顶
+        if((cur->left==NULL&&cur->right==NULL)||
+           (pre!=NULL&&(pre==cur->left||pre==cur->right))){
+            cout<<cur->data<<" ";  //如果当前结点没有孩子结点或者孩子节点都已被访问过 
+            s.pop();
+            pre=cur; 
+        }else{
+            if(cur->right!=NULL)
+                s.push(cur->right);
+            if(cur->left!=NULL)    
+                s.push(cur->left);
+        }
+    }    
+}
