@@ -169,3 +169,90 @@ void post_order_tree_walk_3(struct TreeNode *x){
         }
     }    
 }
+
+// 查找(利用递归方式)
+struct TreeNode *tree_search(struct TreeNode *x,const unsigned int key){
+    // 如果x便是查找的节点
+    if(0==x||key==x->data){
+        return x;
+    }
+    // 如果key小于x中的数据值
+    if(key<x->data) 
+        return tree_search(x->left,key); // 遍历左子树
+    // 如果key不小于x中的数据值
+    else 
+        return tree_search(x->right,key); // 遍历右子树
+}
+
+// 查找（非递归方式）
+struct TreeNode *tree_search_2(struct TreeNode *x,const unsigned int key){
+    while(0!=x&&key!=x->data){
+        if(key<x->data)
+            x=x->left;
+        else
+            x=x->right;
+    }
+    return x;
+}
+
+// 最小元素
+struct TreeNode *tree_minimum(struct TreeNode *x){
+    while(0!=x->left)
+        x=x->left;
+    return x;
+}
+
+// 最大元素
+struct TreeNode *tree_maxinum(struct TreeNode *x){
+    while(0!=x->right)
+        x=x->right;
+    return x;
+}
+
+// 后继
+//（a）若一个结点有右子树，那么该结点的后继节点是其右子树中val值最小的结点（即右子树中最左边的结点）
+//（b）若一个结点没有右子树
+//  1、若该结点是其父结点的左孩子，那么该节点的后继结点即为其父节点。
+//  2、若该结点是其父结点的右孩子，那么需要沿着其父结点一直向树的顶端寻找，直到找到一个结点P，
+//     P结点是其父结点Q的左孩子，那么Q就是该结点的前后继结点。
+struct TreeNode *tree_successor(struct TreeNode *x){
+    if(0==x)
+        return x;
+    // 右子树非空
+    if(0!=x->right)
+        // 后继是大于x的最小值
+        return tree_minimum(x->right);
+    // 右子树为空
+    else{ // x 有一个后继 y，y 是 x 的最低祖先结点，且 y 的左儿子也是x的祖先
+        struct TreeNode *y=x->parent;
+        while(0!=y&&x==y->right){
+            x=y;
+            y=y->parent;
+        }
+        return y;
+    }
+}
+
+// 前驱节点
+//（a）若一个结点有左子树，那么该结点的前驱节点是其左子树中val值最大的结点（即左子树中最右边的结点）
+//（b）若一个结点没有左子树
+//    1、若该结点是其父结点的右孩子，那么该结点的前驱结点即为其父结点。
+//    2、若该结点是其父结点的左孩子，那么需要沿着其父结点一直向树的顶端寻找，直到找到一个结点P，
+//    P结点是其父结点Q的右孩子，那么Q就是该结点的前驱结点。
+struct TreeNode *tree_successor(struct TreeNode *x){
+    if(0==x)
+        return x;
+    // 左子树非空
+    if(0!=x->left)
+        // 后继是大于x的最小值
+        return tree_maximum(x->left);
+    // 左子树为空
+    else{ // x 有一个后继 y，y 是 x 的最低祖先结点，且 y 的左儿子也是x的祖先
+        struct TreeNode *y=x->parent;
+        while(0!=y&&x==y->left){
+            x=y;
+            y=y->parent;
+        }
+        return y;
+    }
+}
