@@ -256,3 +256,64 @@ struct TreeNode *tree_successor(struct TreeNode *x){
         return y;
     }
 }
+
+// 将node节点插入到根为root的树上
+void tree_insert(struct TreeNode *root,struct TreeNode *node){
+    struct TreeNode *y=0;
+    struct TreeNode *x=root;
+    // 下滤找到合适的插入位置（小于当前节点向左否则向右）
+    while(x!=0){
+        y=x;
+        if(node->data<x->data)
+            x=x->left;
+        else
+            x=x->right;
+    }
+    // 整理树中相关节点指针
+    node->parent=y;
+    if(0==y){ // 树为空
+        root=node;
+    }else{ // 树非空
+        if(node->data<y->data)
+            y->left=node;
+        else
+            y->right=node;
+    }
+}
+
+// 删除根为root树中的节点node
+// 1.如果node没有子女，则修改其父结点，使NIL为其子女
+// 2.如果node只有一个子女，则可以通过在其子结点于父结点间建立一条链来删除z
+// 3.如果node有两个子女，先删除node的后继（它没有左子女），再用后继内容来
+//   代替node的内容
+void tree_delete(struct TreeNode *root,struct TreeNode *node){
+    // 算法确定要删除的节点y，该节点y或者是输入结点node（如果
+    // node至多只有一个子女），或者是noe的后继（如果node有两个子女）
+    struct TreeNode *y=0;
+    if(0==node->left||0==node->right) // 单子女
+        y=node; // 自身
+    else // 双子女
+        y=tree_successor(node); // 后继 
+    // x被置为y的非NIL子女，或当y无子女时被置为NIL
+    struct TreeNode *x=0;
+    if(0!=y->left) // 左子树存在
+        x=y->left;
+    else // 左子树不存在
+        x=y->right;
+    // 通过修改y->parent和x中的指针将y删除。在考虑到边界条件，即
+    // x=NIL或y为根结点时，对y的删除就有点复杂了
+    if(0!=x) // 如果y有一个或两个孩子
+        x->parent=y->parent; // 连接孩子与父结点
+    // 如果y为根结点（node为根）,且至少有一子
+    if(0==y->parent)
+        root=x;
+    // 如果y为父节点的左儿子
+    else if(y==y->parent->left)
+        y->parent->left=x; // 链接父结点于x
+    else
+        y->parent->right=x; // 链接父结点于x
+    // 如果y不是node
+    if(y!=node)
+        node->data=y->data;
+    // 释放y
+}
