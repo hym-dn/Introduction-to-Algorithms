@@ -5,7 +5,6 @@
  * 平衡因子(bf)：结点的左子树的深度减去右子树的深度，那么显然-1<=
  * bf<=1。
  */
-
 /**
  * 在平衡二叉树进行插入操作时遇到的不平衡情况有多种，但是这么多种情况
  * 都可以分解为一下四中基础情景：把它叫做：左左、左右、右右、右左。
@@ -19,13 +18,37 @@
  * 右左：节点插入在最小不平衡树的右子树的左子树上面。   右左
  */
 
+#include<stdlib.h>
+#include<stdio.h>
+
 // 树的节点
 typedef struct TreeNode{
-    int m_data;
-    int m_bf;//平衡因子
+    int data;
+    int height;//平衡因子
     struct TreeNode *left;
     struct TreeNode *right;
 }TREENODE,*PTREENODE;
+
+// 创建一个新节点
+PTREENODE createNode(int data,int height,PTREENODE left,PTREENODE right){
+    PTREENODE node=nullptr;
+    if((node=(PTREENODE)malloc(sizeof(TREENODE)))==nullptr){
+        return(node);
+    }
+    node->data=data;
+    node->height=height;
+    node->left=left;
+    node->right=right;
+    return(node);
+}
+
+// 获取节点高度
+int nodeHeight(PTREENODE node){
+    return(nullptr==node?-1:node->height);
+}
+
+//比较大小宏
+#define MAX(a,b) ((a)>(b)?(a):(b))
 
 // 左左：节点插入在最小不平衡节点的左子树的左子树上。
 // 右旋
@@ -73,47 +96,49 @@ void rightLeftRotate(PTREENODE root){
     leftRotate(root);
 }
 
-// 插入
-//void insert(PTREENODE root,PTREENODE node){
-    // 递归终止提交条件
-    
-//}
-
-/*
-// 私有方法进行递归插入，返回插入节点
-Node<T> insert(T data, Node<T> node) {
-        // 递归终止条件
-        if (node == null)
-            return new Node<T>(null, null, data);
-        // 比较插入数据和待插入节点的大小
-        int compareResult = data.compareTo(node.data);
-        if (compareResult > 0) {// 插入node的右子树
-            node.right = insert(data, node.right);
-            // 回调时判断是否平衡
-            if (getHeight(node.right) - getHeight(node.left) == 2) {// 不平衡进行旋转
-                // 判断是需要进行两次旋转还是需要进行一次旋转
-                int compareResult02 = data.compareTo(node.right.data);
-                if (compareResult02 > 0)// 进行一次左旋(右右)
-                    node = rotateSingleLeft(node);
-                else
-                    // 进行两次旋转，先右旋，再左旋
-                    node = rotateDoubleLeft(node);
-            }
-        } else if (compareResult < 0) {// 插入node的左子树
-            node.left = insert(data, node.left);
-            // 回调时进行判断是否平衡
-            if (getHeight(node.left) - getHeight(node.right) == 2) {// 进行旋转
-                // 判断是需要进行两次旋转还是需要进行一次旋转
-                int intcompareResult02 = data.compareTo(node.left.data);
-                if (intcompareResult02 < 0)// 进行一次左旋(左左)
-                    node = rotateSingleRight(node);
-                else
-                    // 进行两次旋转，先左旋，再右旋
-                    node = rotateDoubleRight(node);
-            }
-        }
-        // 重新计算该节点的树高
-        node.height = Math.max(getHeight(node.left), getHeight(node.right)) + 1;
-        return node;
+// 向指定树中插入新数据
+// 返回新插入后树的根
+PTREENODE insertData(PTREENODE root,int data){
+    // 当前树为空
+    if(nullptr==root){
+        // 新节点
+        root=createNode(data,0,nullptr,nullptr);
+        if(nullptr==root) // 创建失败
+            printf("ERROR: create avltree node failed!\n");
+        // 返回
+        return root;
     }
-*/
+    // 应插入左子树
+    if(data<root->data){
+        // 递归插入
+        root->left=insertData(root->left,data);
+        // 失衡检测
+        if(2==nodeHeight(root->left)-nodeHeight(root->right)){ // 失衡
+            if(data<root->left->data) // 左左
+                rightRotate(root);
+            else // 左右
+                leftRightRotate(root);
+        }
+    }
+    // 应插入右子树
+    else if(data>root->data){
+        // 递归插入
+        root->right=insertData(root->right,data);
+        // 失衡检测
+        if(2==nodeHeight(root->right)-nodeHeight(root->left)){
+            if(data>root->right->data) // 右右
+                leftRotate(root);
+            else // 右左
+                rightLeftRotate(root);
+        }
+    }
+    // 无法插入
+    else{
+        printf("添加失败：不允许添加相同的节点！\n");
+        return(nullptr);
+    }
+    // 更新高度
+    root->height=MAX(nodeHeight(root->left),nodeHeight(root->right))+1;
+    // 返回
+    return root;
+}
