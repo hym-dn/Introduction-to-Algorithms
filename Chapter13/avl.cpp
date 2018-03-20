@@ -17,6 +17,16 @@
  * 右右：节点插入在最小不平衡树的右子树的右子树上面。   左旋
  * 右左：节点插入在最小不平衡树的右子树的左子树上面。   右左
  */
+/**
+ * 对于平衡二叉树的删除操作，只要明白一点就可以了：
+ * 如果该节点没有左右子树（该节点为叶子节点）或者只有其中一个子树则可以直接进行删除
+ * 否则需要继续进行判定该节点：如果该节点的外部（内外：以根节点做对称轴，靠近对称轴
+ * 的子树为内部子树）子树树高低于内部子树树高，则找到该节点内部子树的最值（最值：如
+ * 果内部子树是该节点的右子树则数值为右子树的最小值；如果内部节点是该节点的左子树则
+ * 数值为该节点左子树的最大值）进行数值交换，交换之后删除该节点即可。删除之后进行回
+ * 溯的时候要更新节点的树高，然后判断节点是否平衡，不平衡进行旋转。这时对旋转次数的
+ * 判定就不同于插入时的判定。
+ */
 
 #include<stdlib.h>
 #include<stdio.h>
@@ -142,3 +152,75 @@ PTREENODE insertData(PTREENODE root,int data){
     // 返回
     return root;
 }
+
+// 删除指定数据  
+// 删除当前接点: 1）当前结点的左孩子为空，右孩子移到当前接点的位置。
+//             2）当前结点的右孩为空，左孩子移到当前接点的位置。
+//             3）当前结点左右孩子都为空，当前位置改为空。
+//             4）当前结点左右孩子都不为空，左子树接点是小于父接点，
+//                所有的右子树大于父接点，现在删除的正好是左右子树的
+//                父接点，那么左子树中，肯定是左自树的最右孩子排在右子树
+//                的根前面，那么先把左子树的根连接到当前删除的接点位置，
+//                再找到左子树的最右孩子，把当前接点的右子树的根连接上去就
+//                是这些了
+PTREENODE deleteData(PTREENODE root,int data){
+    // 树空  
+    if(nullptr==root){
+        return nullptr;
+    }
+    // 目标节点在左子树中
+    if(data<root->data) 
+        root->left=deleteData(root->left,data); // 递归删除
+    // 目标节点在右子树中   
+    else if(data>root->data)  
+        root->right=deleteData(root->right,data); // 递归删除
+    // 目标节点便是当前节点  
+    else{
+        // 含有两棵子树都不为空
+        if(nullptr!=root->left&&nullptr!=root->right){
+            // 查找后继（前驱也可以）          
+            PTREENODE tmp=root->right;  
+            while(nullptr!=tmp->left)
+                tmp=tmp->left;
+            // 交换节点数据
+            root->data=tmp->data;
+            // 删除交换后的节点
+            root->right=deleteData(root->right,tmp->data);
+            // 平衡已被破坏
+            if(2==nodeHeight(root->left)-nodeHeight(root->right)){  
+                // 将root看做根结点，删除的元素在右子树，此时判断左子树与右
+                // 子树的高度差是不是>=2,若是，则判断左子树是左单旋还是左-
+                // 右双旋，若root->left的右子树比左子树长，则为左-右双旋  
+                // 若root->left的左子树比右子树长，则为左单旋  
+                //              A  
+                //             /            A为root， B为root->Left  
+                //            B             若C分支长(T->left->left)，则为左单旋  
+                //           / \            若D分支长(T->left->right)，则为左右双旋  
+                //          C   D  
+                //          :   :  
+                if((nullptr!=root->left->right)&&nodeHeight(root->left->right)>
+                    nodeHeight(root->left->left))  
+                    leftRightRotate(root); // 左右
+                else  
+                    leftRotate(root);  // 左  
+            }  
+        }
+        // 含有一个或零个子树
+        else{
+            // 记录当前根
+            PTREENODE tmp=root;
+            // 左子树为空  
+            if(nullptr==root->left)  
+                root=root->right;
+            // 右子树为空
+            else if(nullptr==root->right)  
+                root=root->left;
+            // 释放当前根
+            free(tmp);  
+        }  
+    }
+    // 更新高度
+    root->height=MAX(nodeHeight(root->left),nodeHeight(root->right));
+    // 返回根
+    return root;  
+}  
