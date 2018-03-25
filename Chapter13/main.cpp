@@ -126,4 +126,75 @@ void insertNode(PTREENODE root,PTREENODE node){
     node->m_right=NILTREENODE;
     node->m_color=COLOR_RED;
     // 修复红黑树
+    fixupInsert(root,node);
+}
+
+// 修复插入
+void fixupInsert(PTREENODE root,PTREENODE z){
+    // 待插入节点的父亲为红色
+    while(COLOR_RED==z->m_parent->m_color){ // 违反了性质4
+        // 如果父亲节点为红色，则祖父节点一定存在
+        // 如果z的父亲是z祖父的左儿子
+        if(z->m_parent==z->m_parent->m_parent->m_left){
+            // 获取叔父
+            PTREENODE uncle=z->m_parent->m_parent->m_right;
+            // 情况1,叔叔是红色的
+            if(COLOR_RED==uncle->m_color){
+                // 父亲置为黑色
+                z->m_parent->m_color=COLOR_BLACK;
+                // 叔叔置为黑色
+                uncle->m_color=COLOR_BLACK;
+                // 祖父置为红色
+                z->m_parent->m_parent->m_color=COLOR_RED;
+                // z节点上移
+                z=z->m_parent->m_parent;
+            }
+            // 情况2,叔叔是黑色的，且z是右孩子
+            else if(z==z->m_parent->m_right){
+                // z节点上移
+                z=z->m_parent;
+                // 左旋
+                leftRotate(root,z);
+            }
+            // 情况3,叔叔是黑色的，且z是左孩子
+            // 设置z父亲的颜色
+            z->m_parent->m_color=COLOR_BLACK;
+            // 设置z祖父的颜色
+            z->m_parent->m_parent->m_color=COLOR_RED;
+            // 右旋
+            rightRotate(root,z->m_parent->m_parent);
+        }
+        // 如果z的父亲是z祖父的右儿子
+        else{
+            // 获取叔父
+            PTREENODE uncle=z->m_parent->m_parent->m_left;
+            // 情况1,叔叔是红色的
+            if(COLOR_RED==uncle->m_color){
+                // 父亲置为黑色
+                z->m_parent->m_color=COLOR_BLACK;
+                // 叔叔置为黑色
+                uncle->m_color=COLOR_BLACK;
+                // 祖父置为红色
+                z->m_parent->m_parent->m_color=COLOR_RED;
+                // z节点上移
+                z=z->m_parent->m_parent;
+            }
+            // 情况2,叔叔是黑色的，且z是右孩子
+            else if(z==z->m_parent->m_right){
+                // z节点上移
+                z=z->m_parent;
+                // 左旋
+                leftRotate(root,z);
+            }
+            // 情况3,叔叔是黑色的，且z是左孩子
+            // 设置z父亲的颜色
+            z->m_parent->m_color=COLOR_BLACK;
+            // 设置z祖父的颜色
+            z->m_parent->m_parent->m_color=COLOR_RED;
+            // 右旋
+            rightRotate(root,z->m_parent->m_parent);
+        }
+    }
+    // 设置根节点为黑色
+    root->m_color=COLOR_BLACK;
 }
