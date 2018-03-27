@@ -141,20 +141,20 @@ void fixupInsert(PTREENODE root,PTREENODE z){
                 // z节点上移
                 z=z->m_parent->m_parent;
             }
-            // 情况2,叔叔是黑色的，且z是右孩子
-            else if(z==z->m_parent->m_right){
+            // 情况2,叔叔是黑色的，且z是左孩子
+            else if(z==z->m_parent->m_left){
                 // z节点上移
                 z=z->m_parent;
-                // 左旋
-                leftRotate(root,z);
+                // 右旋
+                rightRotate(root,z);
             }
-            // 情况3,叔叔是黑色的，且z是左孩子
+            // 情况3,叔叔是黑色的，且z是右孩子
             // 设置z父亲的颜色
             z->m_parent->m_color=COLOR_BLACK;
             // 设置z祖父的颜色
             z->m_parent->m_parent->m_color=COLOR_RED;
-            // 右旋
-            rightRotate(root,z->m_parent->m_parent);
+            // 左旋
+            leftRotate(root,z->m_parent->m_parent);
         }
     }
     // 设置根节点为黑色
@@ -202,7 +202,7 @@ void insertNode(PTREENODE root,PTREENODE node){
 // 最小元素
 PTREENODE minimumNode(PTREENODE x){
     while(0!=x->m_left)
-        x=x->m_left;
+        x=x->m_left
     return x;
 }
 
@@ -232,7 +232,101 @@ PTREENODE successorNode(PTREENODE x){
 
 //修复删除
 void fixupDelete(PTREENODE root,PTREENODE node){
-
+    // 待修复的节点不是根，并且是黑色的
+    while(node!=root&&COLOR_BLACK==node->m_color){
+        // 如果待修复的节点为左孩子
+        if(node==node->m_parent->m_left){
+            // 获取兄弟节点
+            PTREENODE w=node->m_parent->m_right;
+            // 情况1：如果node节点的兄弟节点是红色的
+            if(COLOR_RED==w->m_color){
+                // 将兄弟节点设置为黑色
+                w->m_color=COLOR_BLACK;
+                // 将父节点设置为红色
+                node->m_color=COLOR_RED;
+                // 左旋
+                leftRotate(root,node->m_parent);
+                // 重置兄弟节点
+                w=node->m_parent->m_right;
+            }
+            // 情况2：node的兄弟w是黑色的，而且w的两个孩子都是黑色的
+            if(COLOR_BLACK==w->m_left->m_color&&COLOR_BLACK==w->m_right->m_color){
+                // 将兄弟节点设置为红色
+                w->m_color=COLOR_RED;
+                // 上移node节点（增加一重黑色）
+                node=node->m_parent;
+            }
+            // 情况3：node的兄弟w是黑色的，w的左孩子是红色的，右孩子是黑色的
+            else if(COLOR_RED==w->m_left->m_color&&COLOR_BLACK==w->m_right->m_color){
+                // 将兄弟节点左孩子设置为黑色
+                w->m_left->m_color=COLOR_BLACK;
+                // 将兄弟节点设置为红色
+                w->m_color=COLOR_RED;
+                // 右旋转
+                rightRotate(root,w);
+                // 重置新的兄弟节点
+                w=node->m_parent->m_right;
+            }
+            // 情况4：node的兄弟节点是黑色的，而且w的右孩子是红色的
+            // 更改兄弟节点的颜色为父节点颜色
+            w->m_color=node->m_parent->m_color;
+            // 更改父节点的颜色为黑色
+            node->m_parent->m_color=COLOR_BLACK;
+            // 将兄弟有孩子的颜色设置为黑色
+            w->m_right->m_color=COLOR_BLACK;
+            // 左旋
+            leftRotate(root,node->m_parent);
+            // 将node设置为根
+            node=root;
+        }
+        // 如果待修复的节点为右孩子
+        else{
+            // 获取兄弟节点
+            PTREENODE w=node->m_parent->m_left;
+            // 情况1：如果node节点的兄弟节点是红色的
+            if(COLOR_RED==w->m_color){
+                // 将兄弟节点设置为黑色
+                w->m_color=COLOR_BLACK;
+                // 将父节点设置为红色
+                node->m_color=COLOR_RED;
+                // 右旋
+                rightRotate(root,node->m_parent);
+                // 重置兄弟节点
+                w=node->m_parent->m_left;
+            }
+            // 情况2：node的兄弟w是黑色的，而且w的两个孩子都是黑色的
+            if(COLOR_BLACK==w->m_left->m_color&&COLOR_BLACK==w->m_right->m_color){
+                // 将兄弟节点设置为红色
+                w->m_color=COLOR_RED;
+                // 上移node节点（增加一重黑色）
+                node=node->m_parent;
+            }
+            // 情况3：node的兄弟w是黑色的，w的右孩子是红色的，左孩子是黑色的
+            else if(COLOR_RED==w->m_right->m_color&&COLOR_BLACK==w->m_left->m_color){
+                // 将兄弟节点右孩子设置为黑色
+                w->m_right->m_color=COLOR_BLACK;
+                // 将兄弟节点设置为红色
+                w->m_color=COLOR_RED;
+                // 左旋
+                leftRotate(root,w);
+                // 重置新的兄弟节点
+                w=node->m_parent->m_left;
+            }
+            // 情况4：node的兄弟节点是黑色的，而且w的右孩子是红色的
+            // 更改兄弟节点的颜色为父节点颜色
+            w->m_color=node->m_parent->m_color;
+            // 更改父节点的颜色为黑色
+            node->m_parent->m_color=COLOR_BLACK;
+            // 将兄弟左孩子的颜色设置为黑色
+            w->m_left->m_color=COLOR_BLACK;
+            // 右旋
+            rightRotate(root,node->m_parent);
+            // 将node设置为根
+            node=root;
+        }
+    }
+    // 将node设置为黑色
+    node->m_color=COLOR_BLACK;
 }
 
 // 从指定树中，删除指定节点
